@@ -24,10 +24,10 @@ st.markdown("""
 def compare_images(img1, img2):
     img1 = cv2.resize(img1, (300, 300))
     img2 = cv2.resize(img2, (300, 300))
-    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-    error = np.sum((img1 - img2) ** 2)
-    mse = error / float(img1.shape[0] * img1.shape[1])
+    img1_gray = cv2.cvtColor(img1, cv2.COLOR_RGB2GRAY)
+    img2_gray = cv2.cvtColor(img2, cv2.COLOR_RGB2GRAY)
+    error = np.sum((img1_gray - img2_gray) ** 2)
+    mse = error / float(img1_gray.shape[0] * img1_gray.shape[1])
     similarity = 1 - (mse / 255)
     return similarity
 
@@ -35,24 +35,27 @@ st.set_page_config(page_title="Content Misuse Detection", layout="centered")
 
 st.title("Content Misuse Detection System")
 st.header("Upload Original Content")
-original = st.file_uploader("Upload Original Image", type=["jpg", "jpeg", "png", "txt", "pdf"])
+original = st.file_uploader("Upload Original Image", type=["jpg", "jpeg", "png"])
 
 st.header("Upload Suspected Content")
-suspect = st.file_uploader("Upload Suspected Image", type=["jpg", "jpeg", "png", "txt", "pdf"])
+suspect = st.file_uploader("Upload Suspected Image", type=["jpg", "jpeg", "png"])
 
 if original is not None and suspect is not None:
-    img1 = Image.open(original)
-    img2 = Image.open(suspect)
+    try:
+        img1 = Image.open(original)
+        img2 = Image.open(suspect)
 
-    st.image([img1, img2], caption=["Original Content", "Suspected"], width=300)
-    img1_np = np.array(img1)
-    img2_np = np.array(img2)
-    similarity = compare_images(img1_np, img2_np)
-    st.subheader(f"Similarity Score: {similarity:.2f}")
+        st.image([img1, img2], caption=["Original Content", "Suspected"], width=300)
+        img1_np = np.array(img1)
+        img2_np = np.array(img2)
+        similarity = compare_images(img1_np, img2_np)
+        st.subheader(f"Similarity Score: {similarity:.2f}")
 
-    if similarity > 0.7:
-        st.error("Unauthorized Use Detected!")
-    else:
-        st.success("No Match Found")
+        if similarity > 0.7:
+            st.error("Unauthorized Use Detected!")
+        else:
+            st.success("No Match Found")
+    except Exception as e:
+        st.error(f"Error processing images: {str(e)}")
 
     
